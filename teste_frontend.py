@@ -1,14 +1,15 @@
 #Importando a interface grafica
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 #Importando o backend
-import backend_calculadora
+from backend_calculadora import *
 
 class CalculadoraApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Calculadora Avançada")
-        self.root.geometry("300x400")
+        self.root.geometry("300x500")
         self.root.resizable(False, False)
         
         # Variáveis
@@ -17,7 +18,31 @@ class CalculadoraApp:
         self.valor_c = tk.StringVar(value="Resultado: ")
         
         # Criar interface
-        self.criar_widgets()
+        self.criar_interface()
+
+
+    def obter_valores(self):
+        try:
+            a = float(self.valor_a.get()) #Obtendo o valor A por passagem de parametro
+            b = float(self.valor_b.get()) #Obtendo o valor B por passagem de parametro
+            return a, b
+        except ValueError:
+            messagebox.showerror("Erro", "Por favor, informe valores numéricos válidos.")
+            return None, None
+                    
+    def atualizar_resultado(self, operacao, nome_operacao):
+        a, b = self.obter_valores()
+        if a is not None and b is not None:
+            try:
+                resultado = operacao(a, b)
+                resultado_formatado = f"{nome_operacao}: {resultado:.2f}"
+                self.valor_c.set(resultado_formatado)
+                # Display result in a popup
+                messagebox.showinfo("Resultado da Operação", resultado_formatado)
+            except ValueError as e:
+                messagebox.showerror("Erro", str(e))
+            except Exception as e:
+                messagebox.showerror("Erro", f"Ocorreu um erro: {str(e)}")  
 
     def criar_interface(self):
         # Estilo
@@ -52,19 +77,31 @@ class CalculadoraApp:
         btn_frame1 = ttk.Frame(op_frame)
         btn_frame1.pack(fill="x", pady=5)
         
-        ttk.Button(btn_frame1, text="1. Soma", command=lambda: self.calcular(1)).grid(row=0, column=0, padx=5, pady=5)
-        ttk.Button(btn_frame1, text="2. Subtração", command=lambda: self.calcular(2)).grid(row=0, column=1, padx=5, pady=5)
-        ttk.Button(btn_frame1, text="3. Multiplicação", command=lambda: self.calcular(3)).grid(row=0, column=2, padx=5, pady=5)
+        # Criando os botões com columnspan=1 para garantir espaçamento adequado
+        ttk.Button(btn_frame1, text="Soma", 
+                   command=lambda: self.atualizar_resultado(soma, "Soma")).grid(row=0, column=0, padx=5, pady=5, sticky="ew")
+        ttk.Button(btn_frame1, text="Subtração", 
+                   command=lambda: self.atualizar_resultado(subtracao, "Subtração")).grid(row=0, column=1, padx=5, pady=5, sticky="ew")
         
         # Segunda linha de botões
         btn_frame2 = ttk.Frame(op_frame)
         btn_frame2.pack(fill="x", pady=5)
         
-        ttk.Button(btn_frame2, text="4. Divisão", command=lambda: self.calcular(4)).grid(row=0, column=0, padx=5, pady=5)
-        ttk.Button(btn_frame2, text="5. Potência", command=lambda: self.calcular(5)).grid(row=0, column=1, padx=5, pady=5)
-        ttk.Button(btn_frame2, text="6. Raiz", command=lambda: self.calcular(6)).grid(row=0, column=2, padx=5, pady=5)
+        ttk.Button(btn_frame2, text="Multiplicação", 
+                   command=lambda: self.atualizar_resultado(multiplicacao, "Multiplicação")).grid(row=0, column=0, padx=5, pady=5, sticky="ew")
+        ttk.Button(btn_frame2, text="Divisão", 
+                   command=lambda: self.atualizar_resultado(divisao, "Divisão")).grid(row=0, column=1, padx=5, pady=5, sticky="ew")
         
-        # Resultado
+        # Terceira linha de botões
+        btn_frame3 = ttk.Frame(op_frame)
+        btn_frame3.pack(fill="x", pady=5)
+        
+        ttk.Button(btn_frame3, text="Potência", 
+                   command=lambda: self.atualizar_resultado(potencia, "Potência")).grid(row=0, column=0, padx=5, pady=5, sticky="ew")
+        ttk.Button(btn_frame3, text="Raiz", 
+                   command=lambda: self.atualizar_resultado(raiz, "Raiz")).grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+
+        # Resultado (criado uma única vez)
         resultado_frame = ttk.Frame(main_frame, padding=10)
         resultado_frame.pack(fill="x", pady=15)
         
@@ -73,52 +110,7 @@ class CalculadoraApp:
         # Limpar botão
         ttk.Button(main_frame, text="Limpar", command=self.limpar).pack(pady=10)
 
-    def obter_valores(self):
-        try:
-            a = float(self.valor_a.get()) #Obtendo o valor A por passagem de parametro
-            b = float(self.valor_b.get()) #Obtendo o valor B por passagem de parametro
-            return a, b
-        except ValueError:
-            messagebox.showerror("Erro", "Por favor, informe valores numéricos válidos.")
-            return None, None
-        
-    def calcular(self, menu):
-        a, b = self.obter_valores()
-        try:
-            c = None
-            # Implementação do mesmo código switch/match que você forneceu
-            match menu:
-                # Soma
-                case 1:
-                    c = a + b
-                    operacao = "Soma"
-                # Subtração
-                case 2:
-                    c = a - b
-                    operacao = "Subtração"
-                # Multiplicação
-                case 3:
-                    c = a * b
-                    operacao = "Multiplicação"
-                # Divisão
-                case 4:
-                    if b == 0:
-                        messagebox.showerror("Erro", "Não é possível dividir por zero.")
-                        return
-                    c = a / b
-                    operacao = "Divisão"
-                # Potência
-                case 5:
-                    c = a ** b
-                    operacao = "Potência"
-                # Raiz
-                case 6:
-                    c = a ** (1/b)
-                    operacao = "Raiz"
-                    
-            except Exception:
-            messagebox.showerror("Erro", f"Ocorreu um erro: {str(e)}")
-                    
+
     def limpar(self):
         self.valor_a.set("")
         self.valor_b.set("")
